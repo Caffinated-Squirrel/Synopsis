@@ -1,0 +1,21 @@
+---
+micronaut:
+  application:
+    name: synopsis
+
+---
+micronaut:
+  security:
+    enabled: false
+    endpoints:
+      login:
+        enabled: true
+      oauth:
+        enabled: true
+    token:
+      jwt:
+        enabled: true
+        signatures:
+          secret:
+            generator:
+              secret: "${JWT_GENERATOR_SIGNATURE_SECRET:pleaseChangeThisSecretForANewOne}"

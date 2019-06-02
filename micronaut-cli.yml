@@ -1,0 +1,5 @@
+profile: service
+defaultPackage: io.caffinatedsquirrel
+---
+testFramework: spock
+sourceLanguage: kotlin
