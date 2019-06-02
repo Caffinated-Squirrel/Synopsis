@@ -8,5 +8,5 @@ class CreateTestRunCommand(val testVersion: Int,
                            val startedAt: String,
                            val executionTime: Long,
                            val runConfig: String,
-                           val stepResults: List<Any>,
+                           val stepResults: List<TestStepResult>,
                            val build: String)
