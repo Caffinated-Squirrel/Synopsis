@@ -4,13 +4,9 @@ import io.caffinatedsquirrel.synopsis.commands.CreateProjectCommand
 import io.caffinatedsquirrel.synopsis.commands.CreateTestCommand
 import io.caffinatedsquirrel.synopsis.commands.CreateTestRunCommand
 import io.micronaut.http.HttpResponse
-import io.micronaut.http.HttpStatus
 import io.micronaut.http.annotation.*
 
 interface ApiOperations {
-
-    @Get("/")
-    fun index(): HttpStatus
 
     @Post("/project")
     fun postProject(@Body createProjectCommand: CreateProjectCommand): HttpResponse<Any>

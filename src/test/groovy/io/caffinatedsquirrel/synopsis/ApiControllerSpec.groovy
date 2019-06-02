@@ -20,15 +20,6 @@ class ApiControllerSpec extends Specification {
     @Inject
     ApiClient apiClient
 
-
-    void "Get index"() {
-        given:
-        HttpStatus status = apiClient.index()
-
-        expect:
-        status == HttpStatus.OK
-    }
-
     def 'Create a project'() {
         given: 'A user creates a project'
         CreateProjectCommand projectCommand = new CreateProjectCommand("My Test Project")
