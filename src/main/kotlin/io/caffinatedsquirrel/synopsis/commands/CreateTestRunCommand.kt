@@ -1,6 +1,7 @@
 package io.caffinatedsquirrel.synopsis.commands
 
 import io.caffinatedsquirrel.synopsis.enums.TestResultType
+import io.caffinatedsquirrel.synopsis.model.TestStepResult
 
 class CreateTestRunCommand(val testVersion: Int,
                            val executedBy: String,

@@ -18,8 +18,8 @@ interface ApiClient extends ApiOperations {
     HttpResponse postProject(@NotNull @Body CreateProjectCommand createProjectCommand)
 
     @Override
-    HttpResponse postTest(@PathVariable int projectId, @NotNull @Body CreateTestCommand createTestCommand)
+    HttpResponse postTest(@PathVariable String projectId, @NotNull @Body CreateTestCommand createTestCommand)
 
     @Override
-    HttpResponse postTestRun(@PathVariable int testId, @NotNull @Body CreateTestRunCommand createTestRunCommand)
+    HttpResponse postTestRun(@PathVariable String testId, @NotNull @Body CreateTestRunCommand createTestRunCommand)
 }

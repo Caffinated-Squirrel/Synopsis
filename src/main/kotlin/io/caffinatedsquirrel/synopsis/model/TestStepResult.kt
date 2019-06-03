@@ -1,4 +1,4 @@
-package io.caffinatedsquirrel.synopsis.commands
+package io.caffinatedsquirrel.synopsis.model
 
 import io.caffinatedsquirrel.synopsis.enums.TestResultType
 
