@@ -14,6 +14,7 @@ interface ApiOperations {
     @Post("/project/{projectId}/test")
     fun postTest(@PathVariable projectId: String, @Body createTestCommand: CreateTestCommand) : HttpResponse<Any>
 
-    @Post("/test/{testId}/testrun")
-    fun postTestRun(@PathVariable testId: String, @Body createTestRunCommand: CreateTestRunCommand): HttpResponse<Any>
+    @Post("/test/{testId}/{scenarioId}/testrun")
+    fun postTestRun(@PathVariable testId: String, @PathVariable scenarioId: String,
+                    @Body createTestRunCommand: CreateTestRunCommand): HttpResponse<Any>
 }

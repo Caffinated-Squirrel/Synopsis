@@ -27,7 +27,11 @@ class ApiValidatorService {
         }
     }
 
-    fun validateTest(projectId: Int, testCommand: CreateTestCommand) : ValidatorResult {
+    fun validateTest(projectId: String, testCommand: CreateTestCommand) : ValidatorResult {
+        if (testCommand.version < 0) {
+            return ValidatorResult(true, "Test version must be greater than or equal to 0.")
+        }
+
         return ValidatorResult(false, "")
     }
 

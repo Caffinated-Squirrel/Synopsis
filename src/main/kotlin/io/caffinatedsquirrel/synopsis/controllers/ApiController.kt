@@ -29,11 +29,17 @@ class ApiController : ApiOperations {
 
     @Secured("isAuthenticated()")
     override fun postTest(@PathVariable projectId: String, @Body createTestCommand: CreateTestCommand) : HttpResponse<Any> {
+        val validation = apiValidatorService.validateTest(projectId, createTestCommand)
+        if (validation.hasError) {
+            return HttpResponse.badRequest(mapOf("error" to validation.message))
+        }
+
         return HttpResponse.created(mapOf("response" to "STUB!"))
     }
 
     @Secured("isAuthenticated()")
-    override fun postTestRun(@PathVariable testId: String, @Body createTestRunCommand: CreateTestRunCommand): HttpResponse<Any> {
+    override fun postTestRun(@PathVariable testId: String, @PathVariable scenarioId: String,
+                             @Body createTestRunCommand: CreateTestRunCommand): HttpResponse<Any> {
         return HttpResponse.created(mapOf("response" to "STUB!"))
     }
 }
