@@ -14,4 +14,5 @@
     </root>
 
     <logger name="io.micronaut.http" level="TRACE"/>
+    <logger name="io.caffinatedsquirrel.synopsis.controllers"/>
 </configuration>

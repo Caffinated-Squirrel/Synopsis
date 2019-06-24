@@ -5,8 +5,9 @@ import io.micronaut.http.HttpResponse
 
 trait ApiDataCreationTrait {
 
-    HttpResponse createProject(ApiClient apiClient = this.apiClient, CreateProjectCommand createProjectCommand =
-                                       new CreateProjectCommand("My Test Project")) {
+    HttpResponse<Object> createProject(CreateProjectCommand createProjectCommand =
+                                       new CreateProjectCommand("My test project")) {
+        ApiClient apiClient = this.apiClient
         apiClient.postProject(createProjectCommand)
     }
 }

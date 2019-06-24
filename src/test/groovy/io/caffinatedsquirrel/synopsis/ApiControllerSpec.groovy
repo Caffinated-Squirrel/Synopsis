@@ -2,10 +2,6 @@ package io.caffinatedsquirrel.synopsis
 
 import io.caffinatedsquirrel.synopsis.commands.CreateProjectCommand
 import io.caffinatedsquirrel.synopsis.commands.CreateTestCommand
-import io.caffinatedsquirrel.synopsis.model.Scenario
-import io.caffinatedsquirrel.synopsis.model.TestConfig
-import io.caffinatedsquirrel.synopsis.model.TestParameterList
-import io.caffinatedsquirrel.synopsis.model.TestStep
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.runtime.server.EmbeddedServer
@@ -25,59 +21,37 @@ class ApiControllerSpec extends Specification implements ApiDataCreationTrait {
 
     def 'Create a project'() {
         given: 'A user creates a project'
-        CreateProjectCommand createProjectCommand = new CreateProjectCommand("My Test Project")
+        CreateProjectCommand createProjectCommand = new CreateProjectCommand("My test project")
 
         when: 'The project is posted'
-        HttpResponse response = createProject(apiClient, createProjectCommand)
+        HttpResponse<Project> postResponse = createProject(createProjectCommand)
 
         then: 'The project shall be created'
-        // TODO: Get request
-        response.status == HttpStatus.CREATED
+        postResponse.status == HttpStatus.CREATED
+        HttpResponse<Project> getResponse = apiClient.getProject(postResponse.body().id)
+        getResponse.body() == postResponse.body()
     }
 
     def 'Create a test'() {
         given: 'A project has been created'
-        createProject()
+        Project project = createProject().body()
 
         when: 'A test is posted'
         CreateTestCommand createTest = new CreateTestCommand(
                 "Create test using the api sample test",
                 "Given a project has been created\nWhen a test is posted\nThen the test shall be created",
-                1,
-                [new Scenario(
-                        [new TestStep("Create a project using the api", "The project is created"),
-                         new TestStep("Create a test for the project", "The test is created")],
-                        [new TestConfig("Windows", "10", "Chrome", "55")],
-                        null)]
+                1
         )
-        // TODO: Create project should return the id, use that for this request. For now the project id isn't validated for this request.
-        HttpResponse response = apiClient.postTest("1", createTest)
+
+        HttpResponse postResponse = apiClient.postTest(project.id, createTest)
+        Test postTest = postResponse.body()
 
         then: 'The test shall be created'
-        // TODO: Get request
-        response.status == HttpStatus.CREATED
-    }
-
-    def 'Create a parameterized test'() {
-        given: 'A project has been created'
-        CreateProjectCommand projectCommand = new CreateProjectCommand("My Test Project")
-        def project = apiClient.postProject(projectCommand).body()
-
-        when: 'A test is posted'
-        CreateTestCommand createTest = new CreateTestCommand(
-                "Create test using the api sample test",
-                "Given a project with name \$name\nWhen a project is created\nThen a project named \$name shall be created",
-                1,
-                [new Scenario(
-                        [new TestStep("Create a project named \$name", "The project is created")],
-                        [new TestConfig("Windows", "10", "Chrome", "55")],
-                        new TestParameterList(["projectName": ["Hello", "World"]]))]
-        )
-        // TODO: Create project should return the id, use that for this request. For now the project id isn't validated for this request.
-        HttpResponse response = apiClient.postTest("1", createTest)
-
-        then: 'The test shall be created'
-        // TODO: Get request
-        response.status == HttpStatus.CREATED
+        HttpResponse getResponse = apiClient.getTest(postTest.id)
+        Test getTest = getResponse.body()
+        postResponse.status == HttpStatus.CREATED
+        getTest.title == createTest.title
+        getTest.description == createTest.description
+        getTest.latestVersion == createTest.latestVersion
     }
 }

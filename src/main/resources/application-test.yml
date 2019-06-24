@@ -27,6 +27,7 @@ mongodb:
     maxWaitQueueSize: 5
   connectionPool:
       maxSize: 20
+#  uri: mongodb://localhost:27017
 synopsis:
   database:
-    name: "synopsis"
+    name: "synopsis-test"
