@@ -3,13 +3,12 @@ package io.caffinatedsquirrel.synopsis
 import io.caffinatedsquirrel.synopsis.commands.CreateProjectCommand
 import io.caffinatedsquirrel.synopsis.commands.CreateTestCommand
 import io.caffinatedsquirrel.synopsis.commands.CreateTestRunCommand
+import io.caffinatedsquirrel.synopsis.commands.CreateTestSuiteCommand
 import io.micronaut.http.HttpResponse
-import io.micronaut.http.annotation.Body
-import io.micronaut.http.annotation.Get
-import io.micronaut.http.annotation.PathVariable
-import io.micronaut.http.annotation.Post
+import io.micronaut.http.annotation.*
 import io.micronaut.http.client.annotation.Client
 
+import javax.annotation.Nullable
 import javax.validation.constraints.NotNull
 
 /**
@@ -29,6 +28,15 @@ interface ApiClient {
 
     @Get("/test/{testId}")
     HttpResponse getTest(String testId)
+
+    @Get("/test{?testId,projectId}")
+    HttpResponse getTestWhere(@QueryValue @Nullable String testId, @QueryValue @Nullable String projectId)
+
+    @Post("/project/{projectId}/testsuite")
+    HttpResponse postTestSuite(@PathVariable String projectId, @Body CreateTestSuiteCommand createTestSuiteCommand)
+
+    @Get("/testsuite/{testsuiteId}")
+    HttpResponse getTestSuite(@PathVariable String testsuiteId)
 
     @Post("/test/{testId}/testrun")
     HttpResponse postTestRun(@PathVariable String testId, @PathVariable String scenarioId,

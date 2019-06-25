@@ -1,11 +1,15 @@
 package io.caffinatedsquirrel.synopsis.services
 
 import com.mongodb.MongoClient
+import com.mongodb.client.model.Filters
+import io.caffinatedsquirrel.synopsis.commands.GetTestQuery
 import io.caffinatedsquirrel.synopsis.domain.TestEntity
 import org.bson.codecs.configuration.CodecRegistries.fromProviders
 import org.bson.codecs.configuration.CodecRegistries.fromRegistries
 import org.bson.codecs.pojo.PojoCodecProvider
+import org.bson.conversions.Bson
 import org.bson.types.ObjectId
+import org.litote.kmongo.findOne
 import org.litote.kmongo.findOneById
 import org.litote.kmongo.withDocumentClass
 import javax.inject.Inject
@@ -38,8 +42,19 @@ class TestDataService {
                 .insertOne(testEntity)
     }
 
-    fun getTest(testId: String): TestEntity {
+    fun getTestById(testId: String): TestEntity? {
         return db.getCollection(testCollectionName).withDocumentClass<TestEntity>()
-                .findOneById(ObjectId(testId))!!
+                .findOneById(ObjectId(testId))
+    }
+
+    fun getTestByFilter(testQuery: GetTestQuery): TestEntity {
+        val filter: Bson = when {
+            testQuery.testId != null -> { Filters.eq("_id", ObjectId(testQuery.testId)) }
+            testQuery.projectId != null -> { Filters.eq("projectId", ObjectId(testQuery.projectId)) }
+            else -> { throw Exception("Query must have at least one non-null value!") }
+        }
+
+        return db.getCollection(testCollectionName).withDocumentClass<TestEntity>()
+                .findOne(filter)!!
     }
 }

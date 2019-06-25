@@ -54,4 +54,37 @@ class ApiControllerSpec extends Specification implements ApiDataCreationTrait {
         getTest.description == createTest.description
         getTest.latestVersion == createTest.latestVersion
     }
+
+    def 'Get test with search criteria'() {
+        given: 'A project with tests has been created'
+        Project project = createProject().body()
+        CreateTestCommand createTest1 = new CreateTestCommand("Get test with search criteria",
+                "Verify the api returns the correct test when a filter is specified", 1)
+        CreateTestCommand createTest2 = new CreateTestCommand("Ducks quack",
+                "Verify the duck quacks", 1)
+        Test test1 = apiClient.postTest(project.id, createTest1).body()
+        Test test2 = apiClient.postTest(project.id, createTest2).body()
+
+        when: 'The test is searched for using #searchType'
+        Test testFromFilter
+        switch(searchType) {
+            case 'projectId':
+                testFromFilter = apiClient.getTestWhere(null, project.id).body()
+                break
+            case 'testId':
+                testFromFilter = apiClient.getTestWhere(test1.id, null).body()
+                break
+            default:
+                throw new Exception("$searchType is not defined!")
+        }
+
+        then: 'The test shall be returned'
+        testFromFilter.id == test1.id
+        testFromFilter.title == test1.title
+        testFromFilter.description == test1.description
+        testFromFilter.latestVersion == test1.latestVersion
+
+        where:
+        searchType << ["projectId", "testId"]
+    }
 }
