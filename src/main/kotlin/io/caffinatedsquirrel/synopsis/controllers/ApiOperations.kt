@@ -3,32 +3,45 @@ package io.caffinatedsquirrel.synopsis.controllers
 import io.caffinatedsquirrel.synopsis.commands.*
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.*
+import io.micronaut.security.annotation.Secured
 import io.reactivex.Observable
 
 interface ApiOperations {
 
     @Post("/project")
-    fun postProject(@Body createProjectCommand: CreateProjectCommand): Observable<HttpResponse<Any>>
+    @Secured("isAuthenticated()")
+    fun postProject(@Body createProjectCommand: CreateProjectCommand): Observable<HttpResponse<*>>
 
     @Get("/project/{projectId}")
-    fun getProject(@PathVariable projectId: String): Observable<HttpResponse<Any>>
+    @Secured("isAuthenticated()")
+    fun getProject(projectId: Long): Observable<HttpResponse<*>>
+
+    @Get("/project{?projectName}")
+    @Secured("isAuthenticated()")
+    fun getProjectWhere(@QueryValue projectName: String?): Observable<HttpResponse<*>>
 
     @Post("/project/{projectId}/test")
-    fun postTest(@PathVariable projectId: String, @Body createTestCommand: CreateTestCommand): Observable<HttpResponse<Any>>
+    @Secured("isAuthenticated()")
+    fun postTest(@PathVariable projectId: Long, @Body createTestCommand: CreateTestCommand): Observable<HttpResponse<*>>
 
     @Get("/test/{testId}")
-    fun getTest(testId: String): Observable<HttpResponse<Any>>
+    @Secured("isAuthenticated()")
+    fun getTest(testId: Long): Observable<HttpResponse<*>>
 
-    @Get("/test{?testId,projectId}")
-    fun getTestWhere(@QueryValue testId: String?, @QueryValue projectId: String?): Observable<HttpResponse<Any>>
+    @Get("/test{?projectId}")
+    @Secured("isAuthenticated()")
+    fun getTestWhere(@QueryValue projectId: Long?): Observable<HttpResponse<*>>
 
     @Post("/project/{projectId}/testsuite")
-    fun postTestSuite(@PathVariable projectId: String, @Body createTestSuiteCommand: CreateTestSuiteCommand): Observable<HttpResponse<Any>>
+    @Secured("isAuthenticated()")
+    fun postTestSuite(@PathVariable projectId: Long, @Body createTestSuiteCommand: CreateTestSuiteCommand): Observable<HttpResponse<*>>
 
-    @Get("/testsuite/{testsuiteId}")
-    fun getTestSuite(@PathVariable testsuiteId: String): Observable<HttpResponse<Any>>
+    @Get("/testsuite/{testSuiteId}")
+    @Secured("isAuthenticated()")
+    fun getTestSuite(@PathVariable testSuiteId: Long): Observable<HttpResponse<*>>
 
     @Post("/test/{testId}/testrun")
-    fun postTestRun(@PathVariable testId: String, @PathVariable scenarioId: String,
-                    @Body createTestRunCommand: CreateTestRunCommand): HttpResponse<Any>
+    @Secured("isAuthenticated()")
+    fun postTestRun(@PathVariable testId: Long,
+                    @Body createTestRunCommand: CreateTestRunCommand): HttpResponse<*>
 }

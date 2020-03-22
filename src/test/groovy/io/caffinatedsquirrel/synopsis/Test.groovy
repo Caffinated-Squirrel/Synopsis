@@ -1,8 +1,7 @@
 package io.caffinatedsquirrel.synopsis
 
 class Test {
-    String id
-    String projectId
+    long id
     String title
     String description
     int latestVersion

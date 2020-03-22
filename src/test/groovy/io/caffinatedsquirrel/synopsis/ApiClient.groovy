@@ -21,24 +21,27 @@ interface ApiClient {
     HttpResponse postProject(@NotNull @Body CreateProjectCommand createProjectCommand)
 
     @Get("/project/{projectId}")
-    HttpResponse getProject(@PathVariable String projectId)
+    HttpResponse getProject(Long projectId)
+
+    @Get("/project{?projectName}")
+    HttpResponse getProjectWhere(@QueryValue @Nullable Long projectId, @QueryValue @Nullable String projectName)
 
     @Post("/project/{projectId}/test")
-    HttpResponse postTest(@PathVariable String projectId, @NotNull @Body CreateTestCommand createTestCommand)
+    HttpResponse postTest(@PathVariable Long projectId, @NotNull @Body CreateTestCommand createTestCommand)
 
     @Get("/test/{testId}")
-    HttpResponse getTest(String testId)
+    HttpResponse getTest(Long testId)
 
-    @Get("/test{?testId,projectId}")
-    HttpResponse getTestWhere(@QueryValue @Nullable String testId, @QueryValue @Nullable String projectId)
+    @Get("/test{?projectId}")
+    HttpResponse getTestWhere(@QueryValue @Nullable Long projectId)
 
     @Post("/project/{projectId}/testsuite")
-    HttpResponse postTestSuite(@PathVariable String projectId, @Body CreateTestSuiteCommand createTestSuiteCommand)
+    HttpResponse postTestSuite(@PathVariable Long projectId, @Body CreateTestSuiteCommand createTestSuiteCommand)
 
     @Get("/testsuite/{testsuiteId}")
-    HttpResponse getTestSuite(@PathVariable String testsuiteId)
+    HttpResponse getTestSuite(@PathVariable Long testsuiteId)
 
     @Post("/test/{testId}/testrun")
-    HttpResponse postTestRun(@PathVariable String testId, @PathVariable String scenarioId,
+    HttpResponse postTestRun(@PathVariable String testId,
                              @NotNull @Body CreateTestRunCommand createTestRunCommand)
 }

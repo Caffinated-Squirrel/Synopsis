@@ -1,7 +1,7 @@
 package io.caffinatedsquirrel.synopsis.commands
 
 import io.caffinatedsquirrel.synopsis.model.ResultType
-import io.caffinatedsquirrel.synopsis.model.FailureInfo
+import io.caffinatedsquirrel.synopsis.domain.hibernate.FailureInfo
 import io.caffinatedsquirrel.synopsis.model.TestConfig
 import io.caffinatedsquirrel.synopsis.model.TestStepResult
 

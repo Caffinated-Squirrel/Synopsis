@@ -1,108 +1,115 @@
 package io.caffinatedsquirrel.synopsis.controllers
 
 import io.caffinatedsquirrel.synopsis.commands.*
-import io.caffinatedsquirrel.synopsis.domain.ProjectEntity
-import io.caffinatedsquirrel.synopsis.domain.TestEntity
-import io.caffinatedsquirrel.synopsis.services.ProjectDataService
-import io.caffinatedsquirrel.synopsis.services.TestDataService
-import io.micronaut.http.HttpRequest
+import io.caffinatedsquirrel.synopsis.domain.hibernate.Project
+import io.caffinatedsquirrel.synopsis.domain.hibernate.Test
+import io.caffinatedsquirrel.synopsis.services.ProjectRepository
+import io.caffinatedsquirrel.synopsis.services.TestRepository
 import io.micronaut.http.HttpResponse
-import io.micronaut.http.annotation.*
-import io.micronaut.security.annotation.Secured
+import io.micronaut.http.annotation.Body
+import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.PathVariable
+import io.micronaut.http.annotation.QueryValue
 import io.reactivex.Observable
-import org.bson.types.ObjectId
-import org.litote.kmongo.project
-import org.slf4j.LoggerFactory
-import javax.inject.Inject
 
 @Controller("/api/v1")
-@Suppress("UNCHECKED_CAST") // Suppress these warnings, if the cast fails then returning an error 500 is the correct response
-class ApiController : ApiOperations {
+class ApiController(private val projectRepository: ProjectRepository,
+                    private val testRepository: TestRepository) : ApiOperations {
 
-    @Inject
-    lateinit var projectDataService: ProjectDataService
-
-    @Inject
-    lateinit var testDataService: TestDataService
-
-    private val LOG = LoggerFactory.getLogger(ApiController::class.java)
-
-    @Secured("isAuthenticated()")
-    override fun postProject(@Body createProjectCommand: CreateProjectCommand): Observable<HttpResponse<Any>> {
-        val project = ProjectEntity(name = createProjectCommand.name)
+    override fun postProject(@Body createProjectCommand: CreateProjectCommand): Observable<HttpResponse<*>> {
         return Observable.fromCallable {
-            projectDataService.writeProject(project)
-            HttpResponse.created(project) as HttpResponse<Any>
+            val createdProject = projectRepository.save(Project(createProjectCommand.name))
+            HttpResponse.created(createdProject) as HttpResponse<*>
         }
     }
 
-    @Secured("isAuthenticated()")
-    override fun getProject(projectId: String): Observable<HttpResponse<Any>> {
+    override fun getProject(projectId: Long): Observable<HttpResponse<*>> {
         return Observable.fromCallable {
-            val project = projectDataService.getProject(projectId)
-            HttpResponse.ok(project) as HttpResponse<Any>
+            val project = projectRepository.findById(projectId)
+            HttpResponse.ok(project) as HttpResponse<*>
         }
     }
 
-    @Secured("isAuthenticated()")
-    override fun postTest(@PathVariable projectId: String, @Body createTestCommand: CreateTestCommand): Observable<HttpResponse<Any>> {
-        val test = TestEntity(
-                projectId = ObjectId(projectId),
+    override fun getProjectWhere(@QueryValue projectName: String?): Observable<HttpResponse<*>> {
+        val query = GetProjectQuery(projectName = projectName)
+        return if (query.isValid()) {
+            Observable.fromCallable {
+                val project = projectRepository.findByGetQuery(query)
+                HttpResponse.ok(project) as HttpResponse<*>
+            }
+        } else {
+            Observable.just(HttpResponse.badRequest(mapOf("error" to "Invalid query!")) as HttpResponse<*>)
+        }
+    }
+
+    override fun postTest(@PathVariable projectId: Long, @Body createTestCommand: CreateTestCommand): Observable<HttpResponse<*>> {
+        val test = Test(
                 title = createTestCommand.title,
                 description = createTestCommand.description,
                 latestVersion = createTestCommand.latestVersion)
-        return Observable.fromCallable {
-            testDataService.writeTest(test)
-            HttpResponse.created(test) as HttpResponse<Any>
-        }
-    }
 
-    @Secured("isAuthenticated()")
-    override fun getTest(testId: String): Observable<HttpResponse<Any>> {
         return Observable.fromCallable {
-            val project = testDataService.getTestById(testId)
-            if (project != null) {
-                HttpResponse.ok(project) as HttpResponse<Any>
+            val optionalProject = projectRepository.findById(projectId)
+
+            if (optionalProject.isPresent) {
+                test.project = optionalProject.get()
+                val createdTest = testRepository.save(test)
+                HttpResponse.created(createdTest) as HttpResponse<*>
             } else {
-                HttpResponse.notFound(mapOf("error" to "Test with id $testId not found")) as HttpResponse<Any>
+                HttpResponse.badRequest(mapOf("error" to "No project found with id $projectId"))
             }
         }
     }
 
-    @Secured("isAuthenticated()")
-    override fun getTestWhere(@QueryValue testId: String?, @QueryValue projectId: String?): Observable<HttpResponse<Any>> {
-        val query = GetTestQuery(testId = testId, projectId = projectId)
+    override fun getTest(testId: Long): Observable<HttpResponse<*>> {
+        return Observable.fromCallable {
+            val test = testRepository.findById(testId)
+            if (test.isPresent) {
+                HttpResponse.ok(test) as HttpResponse<*>
+            } else {
+                HttpResponse.notFound(mapOf("error" to "Test with id $testId not found")) as HttpResponse<*>
+            }
+        }
+    }
+
+    override fun getTestWhere(@QueryValue projectId: Long?): Observable<HttpResponse<*>> {
+        val query = GetTestQuery(projectId = projectId)
         return if (query.isValid()) {
             Observable.fromCallable {
-                HttpResponse.ok(testDataService.getTestByFilter(query)) as HttpResponse<Any>
+                HttpResponse.ok(testRepository.findByProjectId(query.projectId!!)) as HttpResponse<*>
             }
         } else {
-            Observable.just(HttpResponse.badRequest(mapOf("error" to "Invalid filter criteria!")) as HttpResponse<Any>)
+            Observable.just(HttpResponse.badRequest(mapOf("error" to "Invalid query! Use a valid test id or project id.")) as HttpResponse<*>)
         }
     }
 
-    @Secured("isAuthenticated()")
-    override fun postTestSuite(projectId: String, createTestSuiteCommand: CreateTestSuiteCommand): Observable<HttpResponse<Any>> {
-        return Observable.just(HttpResponse.created(mapOf("response" to "STUB!")) as HttpResponse<Any>)
+    override fun postTestSuite(projectId: Long, createTestSuiteCommand: CreateTestSuiteCommand): Observable<HttpResponse<*>> {
+//        val testSuite = TestSuiteEntity(
+//                projectId = "",
+//                title = createTestSuiteCommand.title,
+//                description = createTestSuiteCommand.description,
+//                tests = createTestSuiteCommand.tests.map { ObjectId(it) })
+//        return Observable.fromCallable {
+//            testSuiteDataService.writeTestSuite(testSuite)
+//            HttpResponse.created(testSuite) as HttpResponse<*>
+//        }
+        return Observable.just(HttpResponse.created(mapOf("dummy" to "response (TODO)")))
     }
 
-    @Secured("isAuthenticated()")
-    override fun getTestSuite(testsuiteId: String): Observable<HttpResponse<Any>> {
-        return Observable.just(HttpResponse.created(mapOf("response" to "STUB!")) as HttpResponse<Any>)
+    override fun getTestSuite(testSuiteId: Long): Observable<HttpResponse<*>> {
+//        return Observable.fromCallable {
+//            val testSuite = testSuiteDataService.getTestSuiteById("")
+//            if (testSuite == null) {
+//                HttpResponse.notFound(mapOf("error" to "Test suite with id $testSuiteId not found")) as HttpResponse<*>
+//            } else {
+//                HttpResponse.ok(testSuite) as HttpResponse<*>
+//            }
+//        }
+        return Observable.just(HttpResponse.created(mapOf("dummy" to "response (TODO)")))
     }
 
-    @Secured("isAuthenticated()")
-    override fun postTestRun(@PathVariable testId: String, @PathVariable scenarioId: String,
-                             @Body createTestRunCommand: CreateTestRunCommand): HttpResponse<Any> {
+    override fun postTestRun(@PathVariable testId: Long,
+                             @Body createTestRunCommand: CreateTestRunCommand): HttpResponse<*> {
         return HttpResponse.created(mapOf("response" to "STUB!"))
-    }
-
-    @Error
-    fun onError(request: HttpRequest<Any>): HttpResponse<Any> {
-        if (LOG.isErrorEnabled) {
-            LOG.error("Request to ${request.uri} failed! Body: ${request.body} ${request.headers.map { "${it.key}:${it.value}" }}")
-        }
-
-        return HttpResponse.serverError(mapOf("error" to "Error occurred processing the request. Please try again later."))
     }
 }
